@@ -16,23 +16,35 @@ class Sample:
             self.log.append("v")
 
     def mapping_dictionary(self):
-        mapping_dictionary = {}
-        for repeat in self.repeat_dictionary:
-            mapping_dictionary[repeat] = []
+        # Dictionary of Crispr Arrays key=repeatSequence_ArrayNum value=CRISPR Array Object
+        #Create empty mapping for each repeat stylized sequence_arrayNum
+        mapping_dictionary = dict.fromkeys(self.repeat_dictionary.keys())
+        print(mapping_dictionary)
+        #If the repeat values of the spacer are the same with
         for spacer in self.spacer_dictionary:
+            #Value is the spacer object
             value = self.spacer_dictionary[spacer]
-            repeat = value.get_corresponding_repeat() + "_" + str(value.get_array_number())
+            corr_repeat = value.get_corresponding_repeat()
+            array_number = str(value.get_array_number())
+            repeat =  corr_repeat + "_" + array_number
+            #print("Official repeat")
+            #print(repeat)
+
             if (repeat in mapping_dictionary):
-                mapping_dictionary[repeat].append(value)
+                if (mapping_dictionary[repeat] == None):
+                    starting_list = [value]
+                    arr = CRISPR_Array(self.sample_id, corr_repeat, array_number, starting_list)
+                    mapping_dictionary[repeat] = arr
+                else:
+                    mapping_dictionary[repeat].add_spacer(value)
 
         for map in mapping_dictionary:
             value_1 = mapping_dictionary[map]
             value_2 = self.repeat_dictionary[map]
             number_spacers = value_2.get_number_of_spacers()
-            number_found_spacers = len(value_1)
+            number_found_spacers = value_1.num_spacers()
             if (number_spacers != number_found_spacers):
-                print("For repeat %s, all of spacers not found." %(map))
-
+                print("For repeat %s, all of spacers not found.\n" %(map))
         return mapping_dictionary
 
     def get_mapping(self):
@@ -43,6 +55,31 @@ class Sample:
 
     def get_spacer_dict(self):
         return self.spacer_dictionary
+
+
+class CRISPR_Array:
+    def __init__(self, sample, repeat_sequence, array_num, spacer_list):
+        self.sample = sample
+        self.repeat_sequence = repeat_sequence
+        self.array_num = array_num
+        self.spacer_list = spacer_list
+
+    def get_sample(self):
+        return self.sample
+    def get_repeat_sequence(self):
+        return self.repeat_sequence
+    def get_array_num(self):
+        return self.array_num
+    def get_spacer_list(self):
+        return self.spacer_list
+    def add_spacer(self, spacer):
+        self.spacer_list.append(spacer)
+        print("current size of list")
+        print(len(self.spacer_list))
+        print(self.repeat_sequence)
+        print(self.spacer_list)
+    def num_spacers(self):
+        return len(self.spacer_list)
 
 
 class Sequence:
