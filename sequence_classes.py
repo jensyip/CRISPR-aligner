@@ -32,8 +32,8 @@ class Sample:
 
             if (repeat in mapping_dictionary):
                 if (mapping_dictionary[repeat] == None):
-                    starting_list = [value]
-                    arr = CRISPR_Array(self.sample_id, corr_repeat, array_number, starting_list)
+                    initialize_list = [value]
+                    arr = CRISPR_Array(self.sample_id, corr_repeat, array_number, initialize_list)
                     mapping_dictionary[repeat] = arr
                 else:
                     mapping_dictionary[repeat].add_spacer(value)
@@ -74,10 +74,6 @@ class CRISPR_Array:
         return self.spacer_list
     def add_spacer(self, spacer):
         self.spacer_list.append(spacer)
-        print("current size of list")
-        print(len(self.spacer_list))
-        print(self.repeat_sequence)
-        print(self.spacer_list)
     def num_spacers(self):
         return len(self.spacer_list)
 
@@ -96,10 +92,12 @@ class Sequence:
         return self.sequence
     def get_location(self):
         return self.location
+    def get_array_number(self):
+        return self.array_number
 
 class Repeat(Sequence):
     def __init__(self, sequence, scaffold, location, array_number, number_of_spacers, sequence_type="repeat", questionable=False):
-        super(Repeat, self).__init__(sequence_type, sequence, scaffold, location, questionable)
+        super(Repeat, self).__init__(sequence, scaffold, location, sequence_type, array_number, questionable)
         self.number_of_spacers = number_of_spacers
 
     def get_number_of_spacers(self):
@@ -108,7 +106,7 @@ class Repeat(Sequence):
 
 class Spacer(Sequence):
     def __init__(self, sequence, scaffold, location, array_number, order_number, corresponding_repeat, sequence_type="spacer", questionable=False):
-        super(Spacer, self).__init__(sequence_type, sequence, scaffold, location, questionable)
+        super(Spacer, self).__init__(sequence, scaffold, location, sequence_type, array_number, questionable)
         self.corresponding_repeat = corresponding_repeat
         self.order_number = order_number
         self.array_number = array_number
@@ -116,8 +114,6 @@ class Spacer(Sequence):
     def get_corresponding_repeat(self):
         return self.corresponding_repeat
 
-    def get_array_number(self):
-        return self.array_number
 
 
 
