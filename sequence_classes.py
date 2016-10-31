@@ -19,11 +19,15 @@ class Sample:
         # Dictionary of Crispr Arrays key=repeatSequence_ArrayNum value=CRISPR Array Object
         #Create empty mapping for each repeat stylized sequence_arrayNum
         mapping_dictionary = dict.fromkeys(self.repeat_dictionary.keys())
-        print(mapping_dictionary)
+        #print(mapping_dictionary)
         #If the repeat values of the spacer are the same with
         for spacer in self.spacer_dictionary:
             #Value is the spacer object
             value = self.spacer_dictionary[spacer]
+
+            #Testing to check why the number spacers found and required differ
+            #if (value.get_corresponding_repeat() == "GTTTTCCCCGCGCGAGCGGGGATGTTCC" and value.get_order_number() == 8):
+            #    print("Printing corresponding information: %d and arraynum: %d" %(value.get_order_number(), value.get_array_number()))
             corr_repeat = value.get_corresponding_repeat()
             array_number = str(value.get_array_number())
             repeat =  corr_repeat + "_" + array_number
@@ -31,6 +35,7 @@ class Sample:
             #print(repeat)
 
             if (repeat in mapping_dictionary):
+                #print(repeat)
                 if (mapping_dictionary[repeat] == None):
                     initialize_list = [value]
                     arr = CRISPR_Array(self.sample_id, corr_repeat, array_number, initialize_list)
@@ -38,12 +43,22 @@ class Sample:
                 else:
                     mapping_dictionary[repeat].add_spacer(value)
 
+        #print(mapping_dictionary)
+        #y = mapping_dictionary["GTTTTCCCCGCGCGAGCGGGGATGTTCC_2"].get_spacer_list()
+        #print(y)
+        #for spacer in y:
+        #    if (spacer.get_corresponding_repeat() == "GTTTTCCCCGCGCGAGCGGGGATGTTCC"):
+        #        print(spacer.get_order_number())
+        #print(mapping_dictionary["GTTTTCCCCGCGCGAGCGGGGATGTTCC_2"].num_spacers())
+
         for map in mapping_dictionary:
             value_1 = mapping_dictionary[map]
             value_2 = self.repeat_dictionary[map]
             number_spacers = value_2.get_number_of_spacers()
             number_found_spacers = value_1.num_spacers()
             if (number_spacers != number_found_spacers):
+                #print(number_spacers)
+                #print(number_found_spacers)
                 print("For repeat %s, all of spacers not found.\n" %(map))
         return mapping_dictionary
 
@@ -71,12 +86,19 @@ class CRISPR_Array:
     def get_array_num(self):
         return self.array_num
     def get_spacer_list(self):
+        self.spacer_list = sort_spacers(self.spacer_list)
         return self.spacer_list
     def add_spacer(self, spacer):
         self.spacer_list.append(spacer)
     def num_spacers(self):
         return len(self.spacer_list)
 
+def sort_spacers(spacer_list):
+    sorted_spacers_list = [0] * len(spacer_list)
+    for spacer in spacer_list:
+        order_number = spacer.get_order_number()
+        sorted_spacers_list[order_number - 1] = spacer
+    return sorted_spacers_list
 
 class Sequence:
     def __init__(self, sequence, scaffold, location, sequence_type, array_number, questionable=False):
@@ -111,8 +133,15 @@ class Spacer(Sequence):
         self.order_number = order_number
         self.array_number = array_number
 
+        #Test to check if correct number of spacers are going through
+        #if (corresponding_repeat == "GTTTTCCCCGCGCGAGCGGGGATGTTCC"):
+        #    print("Printing corresponding information: %d and arraynum: %d" %(order_number, array_number))
+
     def get_corresponding_repeat(self):
         return self.corresponding_repeat
+
+    def get_order_number(self):
+        return self.order_number
 
 
 

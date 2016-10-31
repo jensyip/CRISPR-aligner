@@ -1,6 +1,8 @@
 from Bio import SeqIO
 import argparse
 from sequence_classes import *
+from utils import *
+from key_creator import *
 
 def parse_repeats_file(file):
     handle = open(file, "rU")
@@ -32,7 +34,7 @@ def parse_spacers_file(file):
         array_num = sequence.id.split("|")[2]
         order_num = sequence.id.split("|")[4].split("of")[0]
         seq = Spacer(sequence.seq, seq_scaffold, seq_location, int(array_num), int(order_num), seq_repeat)
-        mapping_dictionary[str(sequence.seq)] = seq
+        mapping_dictionary[str(sequence.seq)+ "_" + array_num + "_" + order_num] = seq
     handle.close()
     return mapping_dictionary
 
@@ -51,8 +53,22 @@ def direct_files(repeat_file, spacer_file, questionable_repeats_file=None, quest
         #merge the repeat and the spacer dictionaries
         pass
 
+    #for space in spacer_dict:
+    #    spacer = spacer_dict[space]
+    #    if (spacer.get_corresponding_repeat() == "GTTTTCCCCGCGCGAGCGGGGATGTTCC" and spacer.get_order_number() == 8):
+    #        print (spacer)
+    #        print ( spacer.get_array_number())
+
     x = Sample(repeat_dict, spacer_dict, name)
     print(x.mapping_dictionary)
+    sorted_array = sort_sample_arrays_by_repeat(x)
+    key_map = assign_key(sorted_array)
+    #is_sorted(sorted_array)
+    string_map = reconstruction(key_map, sorted_array)
+
+    #attach key to each spacer
+
+def comparison_of_spacers(x):
     new_spacer_list = []
     dictionary = x.mapping_dictionary
     for repeat in dictionary:
@@ -71,25 +87,26 @@ def direct_files(repeat_file, spacer_file, questionable_repeats_file=None, quest
             print("Sequences: " + seq1 + " " + seq2)
             print("Result: " +  str(levenshtein(seq1, seq2)))
 
-def levenshtein(s1, s2):
-    if len(s1) < len(s2):
-        return levenshtein(s2, s1)
+def sort_sample_arrays_by_repeat(x):
+    #sorted arrays will hold all of the arrays in key=repeat value=[array, array]
+    sorted_arrays = {}
 
-    # len(s1) >= len(s2)
-    if len(s2) == 0:
-        return len(s1)
+    dictionary = x.mapping_dictionary
+    for repeat in dictionary:
+        array = dictionary[repeat]
+        repeat_seq = array.get_repeat_sequence()
+        added = False
+        for rep in sorted_arrays:
+            difference = levenshtein(repeat_seq, rep)
+            if (difference < 3):
+                sorted_arrays[rep].append(array)
+                added = True
+        if not added:
+            sorted_arrays[repeat_seq] = [array]
 
-    previous_row = range(len(s2) + 1)
-    for i, c1 in enumerate(s1):
-        current_row = [i + 1]
-        for j, c2 in enumerate(s2):
-            insertions = previous_row[j + 1] + 1  # j+1 instead of j since previous_row and current_row are one character longer
-            deletions = current_row[j] + 1  # than s2
-            substitutions = previous_row[j] + (c1 != c2)
-            current_row.append(min(insertions, deletions, substitutions))
-        previous_row = current_row
+    print(sorted_arrays)
+    return sorted_arrays
 
-    return previous_row[-1]
 
 
 def main():
